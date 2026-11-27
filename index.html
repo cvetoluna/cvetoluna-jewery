@@ -10,7 +10,7 @@
 <body>
 <header><a class="logo" href="#top">Цветолуна ✿</a><nav><a href="#products">Гривни</a><a href="#custom">По поръчка</a><a href="#about">За нас</a><a href="#contact">Контакт</a></nav></header>
 <main id="top"><section class="hero"><div><div style="letter-spacing:2px;font-size:12px;font-weight:bold">РЪЧНА ИЗРАБОТКА • С МНОГО ЛЮБОВ</div><h1>Гривни,<br>създадени с любов.</h1><p>Ръчно изработени гривни от мъниста и плетени гривни. Всяка е направена от мен с внимание към цветовете и малките детайли.</p><a class="btn" href="#products">Разгледай гривните</a></div><div class="art">✿ ♡ ✨</div></section>
-<section id="products"><h2>Нашите гривни</h2><p class="sub">Избери ръчно изработен модел от мъниста или плетена гривна.</p><div class="chips"><span class="chip">Гривни от мъниста</span><span class="chip">Плетени гривни</span><span class="chip">Ръчна изработка</span></div><div class="products" id="product-list"></div><p class="note">Разгледай 31-те модела, изработени на ръка. Цените ще бъдат добавени след уточнение.</p></section>
+<section id="products"><h2>Нашите гривни</h2><p class="sub">Избери ръчно изработен модел от мъниста или плетена гривна.</p><div class="chips"><span class="chip">Гривни от мъниста</span><span class="chip">Плетени гривни</span><span class="chip">Ръчна изработка</span></div><div class="products" id="product-list"></div><p class="note">Всеки модел се продава поотделно. Цена за 1 гривна: 3,00 €.</p></section>
 <section id="custom"><div class="custom"><div><h2>Бижу, създадено за теб</h2><p>Искаш гривна в определени цветове, размер или с конкретна плетка? Изпрати ми запитване и ще обсъдим изработката.</p></div><form id="custom-form"><label>Име</label><input id="cname" required><label>Телефон или имейл</label><input id="ccontact" required><label>Вид бижу</label><select id="cwish"><option>Гривна от мъниста</option><option>Плетена гривна</option></select><label>Описание</label><textarea id="cdesc" placeholder="Цветове, материали, размер, повод..."></textarea><button>Подготви запитване</button></form></div></section>
 <section id="about"><h2>Ръчно изработени от мен</h2><p class="sub">Всяка гривна на „Цветолуна“ е изработена лично от мен. Благодаря, че подкрепяш малкия творчески бизнес и избираш изделия, направени с грижа.</p></section></main>
 <footer id="contact"><h2>Цветолуна ✿</h2><p>За въпроси и поръчки: добави тук своя телефон, имейл и профили в социалните мрежи.</p><small>© <span id="year"></span> Цветолуна – ръчно изработени бижута</small></footer>
@@ -19,19 +19,36 @@
 <script>
 const products = Array.from({length:31}, (_,i) => {
   const n = String(i+1).padStart(2,'0');
-  return {name:`Гривна – модел ${n}`, category:'Ръчна изработка', price:null, image:`images/grivna${n}.jpg`};
+  return {id:n, name:`Гривна – модел ${n}`, category:'Ръчна изработка', price:3, image:`images/grivna${n}.jpg`};
 });
 const cart=[];
 const $=id=>document.getElementById(id);
 products.forEach(p=>{
   const e=document.createElement('article');
   e.className='card';
-  e.innerHTML=`<div class="photo"><img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='Снимката не е намерена'"></div><div class="info"><h3>${p.name}</h3><div>${p.category}</div><div class="price">Цена: предстои да бъде добавена</div><button type="button" disabled style="opacity:.55;cursor:not-allowed">Очаква цена</button></div>`;
+  e.innerHTML=`<div class="photo"><img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='Снимката не е намерена'"></div><div class="info"><h3>${p.name}</h3><div>${p.category}</div><div class="price">3,00 € / брой</div><button type="button" class="add-to-cart">Добави в количката</button></div>`;
+  e.querySelector('.add-to-cart').addEventListener('click',()=>addToCart(p));
   $('product-list').append(e);
 });
+function addToCart(product){
+  const existing=cart.find(item=>item.id===product.id);
+  if(existing) existing.quantity+=1;
+  else cart.push({...product,quantity:1});
+  render();
+  $('count').textContent=cart.reduce((sum,item)=>sum+item.quantity,0);
+}
 function render(){
-  $('cart-items').innerHTML='Количката е празна.';
-  $('total').textContent='';
+  if(!cart.length){$('cart-items').textContent='Количката е празна.';$('total').textContent='';return;}
+  $('cart-items').innerHTML=cart.map(item=>`<div class="line"><span>${item.name}<br><small>3,00 € × ${item.quantity}</small></span><span><button type="button" class="qty" data-id="${item.id}" data-change="-1" aria-label="Намали">−</button> ${item.quantity} <button type="button" class="qty" data-id="${item.id}" data-change="1" aria-label="Увеличи">+</button></span><b>${(item.price*item.quantity).toFixed(2).replace('.',',')} €</b></div>`).join('');
+  $('cart-items').querySelectorAll('.qty').forEach(button=>button.addEventListener('click',()=>{
+    const item=cart.find(product=>product.id===button.dataset.id);
+    item.quantity+=Number(button.dataset.change);
+    if(item.quantity<=0) cart.splice(cart.indexOf(item),1);
+    $('count').textContent=cart.reduce((sum,product)=>sum+product.quantity,0);
+    render();
+  }));
+  const total=cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
+  $('total').textContent=`Общо: ${total.toFixed(2).replace('.',',')} €`;
 }
 $('open-cart').onclick=()=>{$('cart-dialog').showModal();render()};
 $('close-cart').onclick=()=>$('cart-dialog').close();
@@ -39,7 +56,13 @@ function showText(title,text){
   const w=window.open('','_blank');
   if(w){const pre=w.document.createElement('pre');pre.style='white-space:pre-wrap;font:16px Arial;padding:20px';pre.textContent=text;w.document.body.append(pre);w.document.title=title}else alert(text);
 }
-$('checkout').onsubmit=e=>{e.preventDefault();alert('Първо ще добавим реалните цени на моделите, след което ще активираме поръчките.');};
+$('checkout').onsubmit=e=>{
+  e.preventDefault();
+  if(!cart.length){alert('Добави поне една гривна в количката.');return;}
+  const items=cart.map(item=>`${item.name} – ${item.quantity} бр. × 3,00 € = ${(item.quantity*item.price).toFixed(2).replace('.',',')} €`).join('\n');
+  const total=cart.reduce((sum,item)=>sum+item.price*item.quantity,0).toFixed(2).replace('.',',');
+  showText('Поръчка Цветолуна',`ПОРЪЧКА – ЦВЕТОЛУНА\n\n${items}\n\nОбщо за гривните: ${total} €\n\nИме: ${$('name').value}\nТелефон: ${$('phone').value}\nИмейл: ${$('email').value}\nКуриер: ${$('courier').value}\nДоставка: ${$('method').value}\nАдрес/офис: ${$('address').value}\nБележка: ${$('comment').value}`);
+};
 $('custom-form').onsubmit=e=>{
   e.preventDefault();
   showText('Запитване Цветолуна',`ЗАПИТВАНЕ ЗА ИНДИВИДУАЛНО БИЖУ\nИме: ${$('cname').value}\nКонтакт: ${$('ccontact').value}\nВид: ${$('cwish').value}\nОписание: ${$('cdesc').value}`);
