@@ -17,10 +17,18 @@
 <button class="cart-fab" id="open-cart">🛍 Количка (<span id="count">0</span>)</button>
 <dialog id="cart-dialog"><div class="modal-head"><b>Твоята поръчка</b><button class="close" id="close-cart">×</button></div><div class="modal-body"><div id="cart-items"></div><div class="total" id="total"></div><form id="checkout"><h3>Данни за доставка</h3><div class="grid"><div><label>Име и фамилия *</label><input id="name" required></div><div><label>Телефон *</label><input id="phone" type="tel" required></div><div class="wide"><label>Имейл за потвърждение *</label><input id="email" type="email" required></div><div><label>Куриер</label><select id="courier"><option>Еконт</option><option>Спиди</option></select></div><div><label>Доставка</label><select id="method"><option>До офис</option><option>До адрес</option></select></div><div class="wide"><label>Град и адрес или офис *</label><input id="address" required></div><div class="wide"><label>Бележка</label><textarea id="comment"></textarea></div></div><div class="notice">Плащане с наложен платеж. Доставката се заплаща според тарифата на куриера. Поръчката се потвърждава от продавача.</div><button style="width:100%">Подготви поръчката</button><p class="note">На посочения имейл ще изпратим автоматично потвърждение, че сме получили поръчката. Ще се свържем с теб за окончателно потвърждение.</p></form></div></dialog>
 <script>
+
 const products = Array.from({length:31}, (_,i) => {
   const n = String(i+1).padStart(2,'0');
-  return {id:n, name: image: `images/grivna${String(n).padStart(2, "0")}.jpg` category:'Ръчна изработка', price:3, image:`images/grivna${n}.jpg`};
+  return {
+    id: n,
+    name: `Гривна – модел ${n}`,
+    category: 'Ръчна изработка',
+    price: 3,
+    image: `images/grivna${n}.jpg`
+  };
 });
+  
 const cart=[];
 const $=id=>document.getElementById(id);
 products.forEach(p=>{
