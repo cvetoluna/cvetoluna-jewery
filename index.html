@@ -19,7 +19,7 @@
 <script>
 const products = Array.from({length:31}, (_,i) => {
   const n = String(i+1).padStart(2,'0');
-  return {id:n, name:`Гривна – модел ${n}`, category:'Ръчна изработка', price:3, image:`images/grivna${n}.jpg`};
+  return {id:n, name: image: `images/grivna${String(n).padStart(2, "0")}.jpg` category:'Ръчна изработка', price:3, image:`images/grivna${n}.jpg`};
 });
 const cart=[];
 const $=id=>document.getElementById(id);
