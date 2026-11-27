@@ -15,7 +15,7 @@
 <section id="about"><h2>Ръчно изработени от мен</h2><p class="sub">Всяка гривна на „Цветолуна“ е изработена лично от мен. Благодаря, че подкрепяш малкия творчески бизнес и избираш изделия, направени с грижа.</p></section></main>
 <footer id="contact"><h2>Цветолуна ✿</h2><p>За въпроси и поръчки: добави тук своя телефон, имейл и профили в социалните мрежи.</p><small>© <span id="year"></span> Цветолуна – ръчно изработени бижута</small></footer>
 <button class="cart-fab" id="open-cart">🛍 Количка (<span id="count">0</span>)</button>
-<dialog id="cart-dialog"><div class="modal-head"><b>Твоята поръчка</b><button class="close" id="close-cart">×</button></div><div class="modal-body"><div id="cart-items"></div><div class="total" id="total"></div><form id="checkout"><h3>Данни за доставка</h3><div class="grid"><div><label>Име и фамилия *</label><input id="name" required></div><div><label>Телефон *</label><input id="phone" type="tel" required></div><div class="wide"><label>Имейл</label><input id="email" type="email"></div><div><label>Куриер</label><select id="courier"><option>Еконт</option><option>Спиди</option></select></div><div><label>Доставка</label><select id="method"><option>До офис</option><option>До адрес</option></select></div><div class="wide"><label>Град и адрес или офис *</label><input id="address" required></div><div class="wide"><label>Бележка</label><textarea id="comment"></textarea></div></div><div class="notice">Плащане с наложен платеж. Доставката се заплаща според тарифата на куриера. Поръчката се потвърждава от продавача.</div><button style="width:100%">Подготви поръчката</button><p class="note">Демо версия: бутонът подготвя поръчката като текст, но не я изпраща автоматично. Преди реални продажби ще свържем формуляра с имейл услуга.</p></form></div></dialog>
+<dialog id="cart-dialog"><div class="modal-head"><b>Твоята поръчка</b><button class="close" id="close-cart">×</button></div><div class="modal-body"><div id="cart-items"></div><div class="total" id="total"></div><form id="checkout"><h3>Данни за доставка</h3><div class="grid"><div><label>Име и фамилия *</label><input id="name" required></div><div><label>Телефон *</label><input id="phone" type="tel" required></div><div class="wide"><label>Имейл</label><input id="email" type="email"></div><div><label>Куриер</label><select id="courier"><option>Еконт</option><option>Спиди</option></select></div><div><label>Доставка</label><select id="method"><option>До офис</option><option>До адрес</option></select></div><div class="wide"><label>Град и адрес или офис *</label><input id="address" required></div><div class="wide"><label>Бележка</label><textarea id="comment"></textarea></div></div><div class="notice">Плащане с наложен платеж. Доставката се заплаща според тарифата на куриера. Поръчката се потвърждава от продавача.</div><button style="width:100%">Подготви поръчката</button><p class="note">След изпращане ще видиш потвърждение от услугата за формуляри. Първата поръчка активира получаването на имейли.</p></form></div></dialog>
 <script>
 const products = Array.from({length:31}, (_,i) => {
   const n = String(i+1).padStart(2,'0');
@@ -52,20 +52,47 @@ function render(){
 }
 $('open-cart').onclick=()=>{$('cart-dialog').showModal();render()};
 $('close-cart').onclick=()=>$('cart-dialog').close();
-function showText(title,text){
-  const w=window.open('','_blank');
-  if(w){const pre=w.document.createElement('pre');pre.style='white-space:pre-wrap;font:16px Arial;padding:20px';pre.textContent=text;w.document.body.append(pre);w.document.title=title}else alert(text);
+function sendToEmail(subject, fields){
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action='https://formsubmit.co/cvetoluna@gmail.com';
+  form.style.display='none';
+  const values={_subject:subject,_template:'table',...fields};
+  Object.entries(values).forEach(([key,value])=>{
+    const input=document.createElement('input');
+    input.type='hidden';
+    input.name=key;
+    input.value=String(value ?? '');
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
 }
 $('checkout').onsubmit=e=>{
   e.preventDefault();
   if(!cart.length){alert('Добави поне една гривна в количката.');return;}
   const items=cart.map(item=>`${item.name} – ${item.quantity} бр. × 3,00 € = ${(item.quantity*item.price).toFixed(2).replace('.',',')} €`).join('\n');
   const total=cart.reduce((sum,item)=>sum+item.price*item.quantity,0).toFixed(2).replace('.',',');
-  showText('Поръчка Цветолуна',`ПОРЪЧКА – ЦВЕТОЛУНА\n\n${items}\n\nОбщо за гривните: ${total} €\n\nИме: ${$('name').value}\nТелефон: ${$('phone').value}\nИмейл: ${$('email').value}\nКуриер: ${$('courier').value}\nДоставка: ${$('method').value}\nАдрес/офис: ${$('address').value}\nБележка: ${$('comment').value}`);
+  sendToEmail('Нова поръчка от Цветолуна',{
+    'Артикули':items,
+    'Общо за гривните':`${total} €`,
+    'Име и фамилия':$('name').value,
+    'Телефон':$('phone').value,
+    'Имейл на клиента':$('email').value,
+    'Куриер':$('courier').value,
+    'Доставка':$('method').value,
+    'Град и адрес или офис':$('address').value,
+    'Бележка':$('comment').value
+  });
 };
 $('custom-form').onsubmit=e=>{
   e.preventDefault();
-  showText('Запитване Цветолуна',`ЗАПИТВАНЕ ЗА ИНДИВИДУАЛНО БИЖУ\nИме: ${$('cname').value}\nКонтакт: ${$('ccontact').value}\nВид: ${$('cwish').value}\nОписание: ${$('cdesc').value}`);
+  sendToEmail('Запитване за индивидуална гривна – Цветолуна',{
+    'Име':$('cname').value,
+    'Телефон или имейл за контакт':$('ccontact').value,
+    'Вид бижу':$('cwish').value,
+    'Описание':$('cdesc').value
+  });
 };
 $('year').textContent=new Date().getFullYear();
 render();
