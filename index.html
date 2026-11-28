@@ -134,14 +134,29 @@ body {background: #21152b;color: #f8eafa;}header {background: linear-gradient(12
 
 <script>
 const products = Array.from({length:31}, (_,i) => {
-  const n = String(i+1).padStart(2,'0');
-  return {
-    id:n,
-    name:`Гривна – модел ${n}`,
-    price:3,
-    image:`images/grivna${n}.jpg`
-  };
-});
+  const products = [
+  ...Array.from({length:73}, (_,i) => {
+    const n = String(i+1).padStart(2,'0');
+    return {
+      id:`g${n}`,
+      name:`Гривна – модел ${n}`,
+      price:3,
+      image:`images/grivna${n}.jpg`,
+      category:'Гривни'
+    };
+  }),
+
+  ...Array.from({length:11}, (_,i) => {
+    const n = String(i+1).padStart(2,'0');
+    return {
+      id:`k${n}`,
+      name:`Колие – модел ${n}`,
+      price:5,
+      image:`images/kolie${n}.jpg`,
+      category:'Колиета'
+    };
+  })
+];
 
 const cart = [];
 const $ = id => document.getElementById(id);
